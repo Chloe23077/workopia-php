@@ -1,0 +1,15 @@
+{
+  "name": "chloe23077/workopia-php",
+  "description": "Job listing application",
+  "authors": [{
+    "name": "Yunjeong Gu",
+    "email": "20114937@tafe.wa.edu.au"
+  }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Framework\\": "Framework/",
+      "App\\": "App/"
+    }
+  }
+}
