@@ -4,7 +4,8 @@ namespace Framework;
 
 use App\Controllers\ErrorController;
 
-class Router {
+class Router
+{
     protected $routes = [];
 
     /**
@@ -15,7 +16,8 @@ class Router {
      * @param string $action
      * @return void
      */
-    public function registerRoute($method, $uri, $action) {
+    public function registerRoute($method, $uri, $action)
+    {
         list($controller, $controllerMethod) = explode('@', $action);
 
         $this->routes[] = [
@@ -33,7 +35,8 @@ class Router {
      * @param string $controller
      * @return void
      */
-    public function get($uri, $controller) {
+    public function get($uri, $controller)
+    {
         $this->registerRoute('GET', $uri, $controller);
     }
 
@@ -44,7 +47,8 @@ class Router {
      * @param string $controller
      * @return void
      */
-    public function post($uri, $controller) {
+    public function post($uri, $controller)
+    {
         $this->registerRoute('POST', $uri, $controller);
     }
 
@@ -55,7 +59,8 @@ class Router {
      * @param string $controller
      * @return void
      */
-    public function put($uri, $controller) {
+    public function put($uri, $controller)
+    {
         $this->registerRoute('PUT', $uri, $controller);
     }
 
@@ -66,7 +71,8 @@ class Router {
      * @param string $controller
      * @return void
      */
-    public function delete($uri, $controller) {
+    public function delete($uri, $controller)
+    {
         $this->registerRoute('DELETE', $uri, $controller);
     }
 
@@ -76,7 +82,8 @@ class Router {
      *
      * @return void
      */
-    public function error($httpCode = 404) {
+    public function error($httpCode = 404)
+    {
         http_response_code($httpCode);
         loadView("error/{$httpCode}");
         exit;
@@ -86,12 +93,52 @@ class Router {
      * Route the request
      *
      * @param string $uri
-     * @param string $method
      * @return void
      */
-    public function route($uri, $method) {
-        foreach($this->routes as $route) {
-            if($route['uri'] === $uri && $route['method']) {
+    public function route($uri)
+    {
+        $requestMethod = $_SERVER['REQUEST_METHOD'];
+
+        foreach ($this->routes as $route) {
+            // Split the current URI into segments
+            $uriSegments = explode('/', trim($uri, '/'));
+
+            // Split the route URI into segments
+            $routeSegments = explode('/', trim($route['uri'], '/'));
+
+            $match = true;
+
+            // Check if the number of segments matches
+            if(count($uriSegments) === count($routeSegments) && strtoupper($route['method'] === $requestMethod)) {
+                $params = [];
+
+                $match = true;
+
+                for($i = 0; $i < count($uriSegments); $i++) {
+                    // If the uri's do not match and there is no param
+                    if($routeSegments[$i] !== $uriSegments[$i] && !preg_match('/\{(.+?)\}/', $routeSegments[$i])) {
+                        $match = false;
+                        break;
+                    }
+
+                    // Check for the param and add to $Params array
+                    if(preg_match('/\{(.+?)\}/', $routeSegments[$i], $matches)) {
+                        $params[$matches[1]] = $uriSegments[$i];
+                    }
+                 }
+
+                if($match) {
+                    $controller = 'App\\Controllers\\' . $route['controller'];
+                    $controllerMethod = $route['controllerMethod'];
+
+                    //Instatiate the controller and call the method
+                    $controllerInstance = new $controller();
+                    $controllerInstance->$controllerMethod($params);
+                    return;
+                }
+            }
+
+            /*if($route['uri'] === $uri && $route['method']) {
                 //Extract controller and controller method
                 $controller = 'App\\Controllers\\' . $route['controller'];
                 $controllerMethod = $route['controllerMethod'];
@@ -100,10 +147,8 @@ class Router {
                 $controllerInstance = new $controller();
                 $controllerInstance->$controllerMethod();
                 return;
-
-            }
+            }*/
         }
-
         ErrorController::notFound();
     }
 }
