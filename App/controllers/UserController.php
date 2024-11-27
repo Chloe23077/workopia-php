@@ -105,6 +105,17 @@ class UserController {
         $this->db->query('INSERT INTO users (name, email, city, state, password) VALUES (:name, :email,
         :city, :state, :password)', $params);
 
+        //Get new
+        $userId = $this->db->conn->lastInsertId();
+
+        Session::set('user', [
+            'id' => $userId,
+            'name' => $name,
+            'email' => $email,
+            'city' => $city,
+            'state' => $state
+        ]);
+
         redirect('/');
     }
 
