@@ -1,6 +1,5 @@
 <?= loadPartial('head') ?>
 <?= loadPartial('navbar') ?>
-<?= loadPartial('showcase-search') ?>
 <?= loadPartial('top-banner') ?>
 
     <section class="container mx-auto p-4 mt-4">
